@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近买了一个 Raspberry Pi ，原意是想鼓捣成一个支持 IPv6 的路由器。趁着放假先来玩一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raspberry Pi">
+<meta property="og:url" content="roosephu.github.io/2014/06/22/R-Pi-start/index.html">
+<meta property="og:site_name" content="AFAIK">
+<meta property="og:description" content="最近买了一个 Raspberry Pi ，原意是想鼓捣成一个支持 IPv6 的路由器。趁着放假先来玩一下。">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-01-01T11:42:12.627Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Raspberry Pi">
+<meta name="twitter:description" content="最近买了一个 Raspberry Pi ，原意是想鼓捣成一个支持 IPv6 的路由器。趁着放假先来玩一下。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="roosephu.github.io/2014/06/22/R-Pi-start/"/>
+
+
+
+
+
+  <title>Raspberry Pi | AFAIK</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-37094989-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AFAIK</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Valar Dohaeris</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="roosephu.github.io/2014/06/22/R-Pi-start/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yuping Luo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AFAIK">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Raspberry Pi</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2014-06-22T16:09:55-04:00">
+                2014-06-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/06/22/R-Pi-start/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2014/06/22/R-Pi-start/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近买了一个 Raspberry Pi ，原意是想鼓捣成一个支持 IPv6 的路由器。趁着放假先来玩一下。</p>
+<a id="more"></a>
+<h1 id="材料预备">材料预备</h1>
+<p>以下是必须的材料：</p>
+<ol type="1">
+<li>Raspberry Pi 电路板</li>
+<li>无线网卡</li>
+<li>SD 卡</li>
+<li>Micro USB 线：电源线</li>
+</ol>
+<p>以下是可选的：</p>
+<ol type="1">
+<li>移动电源，5V/2A</li>
+<li>HDMI 显示器</li>
+<li>网线</li>
+</ol>
+<p>其实还需要一个 ARM 系统……这个就看个人爱好了……作为长期的逗逼 Arch 党，我就选择了 Arch ……</p>
+<h1 id="装系统">装系统</h1>
+<p>这样把文件烧进去</p>
+<pre><code>dd if=arch.img of=/dev/sdX</code></pre>
+<p>速度什么的，不要在意这些细节。</p>
+<p>由于我没有 <del>高富帅</del> 的显示器，所以我就只能 headless 地装了。 树莓派的 wiki 还是挺好的。</p>
+<p>用 NetworkManager 和网线连接树莓派的时候，要把 method 改成 Shared 。我一开始不知道怎么搞于是怎么都搜不到树莓派。用网线连上去之后就可以</p>
+<pre><code>nmap -T5 -n -p 22 --open --min-parallelism 200 10.42.0.0/24</code></pre>
+<p>这样搜索树莓派了。后面的 ip 记得改掉。只要能够 ssh 上去，系统就可以算装好了。</p>
+<p>很多次是把卡插进去后没反应。在 fanhq 的帮助下，我才知道我根本就不懂 ARM 那套理论。一个 SD 卡烧好后其实是可以跑的，只不过需要等一等。我发现这文件系统好脆弱，一不小心就会跪。这是在提示我们多做备份吗 = =</p>
+<h1 id="配置">配置</h1>
+<p>非常惊讶的是清华居然有 archlinuxarm 的仓库，于是就用了这个仓库。</p>
+<p>由于买东西的时候附赠了一个京东的小度 Wi-Fi ，于是我就准备用这个 USB 无线网卡了。一开始还写了下如何自己编译 MT7601U 的驱动，后来发现我想多了，这货的驱动没有实现 nl80211 所以没法 AP-mode 。我还是再考虑买个无线网卡吧。</p>
+<p>由于没有屏幕，导致 debug 特别蛋碎，所以决定买一 <del>个屏幕</del> 根数据线。似乎有个东西叫做 Adafruit 954 可以利用 GPIO 转 USB 来输出错误信息。但是这货似乎挺高贵的我买不到，于是只好买了根 PL2303HX 。</p>
+<p>根据这 make 的速度，哪位勇士敢在树莓派上 make 一个 Firefox 吗？！（据说交叉编译是个坑？）</p>
+<p>……于是我先挖一个坑，回 THU 在搞去了。</p>
+<h1 id="gpio-系列">GPIO 系列</h1>
+<p>买了根 PL2303HX 的线，按照网上的图片插上去后 <code>dmesg | tail</code> 可以看到</p>
+<pre><code>[17314.401925] pl2303 3-3:1.0: pl2303 converter detected
+[17314.402457] usb 3-3: pl2303 converter now attached to ttyUSB</code></pre>
+<p>这种东西，这表示系统已经识别好了 PL2303HX 了。而且树莓派的 POWER 已经打开了有木有！</p>
+<p>然后怒上 <code>minicom -b 115200 -o -D /dev/ttyUSB0</code> 发现什么都没有……发现 Arch 已经跪了……我还是老老实实用 Raspbian 吧。最后还是用回了 Debian 系 →_→</p>
+<p>开始刷 Raspbian ……继续 dd 吧。</p>
+<p>然后插回 Raspberry Pi 发现 minicom 已经有反应了！可以显示出 tty 的界面了！好了现在可以正式开始调教了……（一脸血）</p>
+<p>后来一直是网络有问题，每次都提示什么 <code>lo</code> 被定义了两次，最后发现是 nano 某次把文件编码换成了 Mac 导致出现了奇怪的问题。</p>
+<p>由于我用的是 <code>shadowsocks-libev</code> 所以又要自己编译。这次 git 似乎出了点小问题，大概是 SSL 检验的时候没有证书结果跪了。跑一下</p>
+<pre><code>export GIT_SSL_NO_VERIFY=1</code></pre>
+<p>就好了。</p>
+<p>由于 shadowsocks 已经调教好了， <code>modprobe ipv6</code> 一下就可以直接用了。</p>
+<p>用 privoxy 设置了一个 http 代理，于是 iPad/iPhone 都可以用了。剩下的就等无线网卡的到来啦……感觉放 AP 是个坑 →_→ 不要再像上次那个小度 Wi-Fi 一样这么蛋疼地编译驱动了……</p>
+<p>赞 privoxy ，配置文件语法相当于 pac 了（不过没 js 支持），用这两句话就可以不用 shadowsocks 去上 tsinghua 校内网了：</p>
+<pre><code>forward-socks5 / 127.0.0.1:8188 .
+forward .tsinghua.edu.cn .</code></pre>
+<h1 id="无线网卡">无线网卡</h1>
+<p>我用的无线网卡是 Tp-Link WN725N ，因为已知这是支持 Pi 的。插上去后 <code>lsusb</code> 发现识别出来了，还好……开始装驱动</p>
+<pre><code>wget https://dl.dropboxusercontent.com/u/80256631/8188eu-???.tar.gz
+tar -zxvf 8188eu-???.tar.gz
+sudo install -p -m 644 8188eu.ko /lib/modules/3.10.18+/kernel/drivers/net/wireless
+sudo insmod /lib/modules/3.10.18+/kernel/drivers/net/wireless/8188eu.ko
+sudo depmod -a
+sudo reboot</code></pre>
+<p>那个 ??? 是什么详见 <a href="http://www.raspberrypi.org/forums/viewtopic.php?p=462982#p462982" target="_blank" rel="noopener">这里</a> 。</p>
+<p>重启后 ifconfig 就可以看见 wlan0 了。然后开始配置 hostapd 。一开始提示找不到 nl80211 ，<code>modprobe mac80211</code> 就可以 OK 了。</p>
+<p>然后配置 udhcpd ：</p>
+<ol type="1">
+<li>把 interface 改成 wlan0</li>
+<li>把 dns 改成 8.8.8.8</li>
+<li>把 router 改成 192.168.0.1</li>
+</ol>
+<p>然后就可以放心的 <code>/etc/init.d/udhcpd start</code> 了。</p>
+<p>发现一件奇怪的事， <code>iw list</code> 啥都不出来，但是 <code>iwconfig</code>/<code>ifconfig</code> 就可以出来，<code>iwlist scan</code> 还可以正常的使用，不明真相（虽然两者属于不同的工具包，但是为什么会有这样奇怪的问题呢）。想找到解决方法找了很久没找到，索性不管了。</p>
+<p>中间遇到了很多奇葩的错误调了很久，例如我现在的 hostapd 不是原版的 hostapd ，而是 <a href="http://www.daveconroy.com/wp3/wp-content/uploads/2013/07/hostapd.zip" target="_blank" rel="noopener">这里</a> 的。原版的 hostapd 会提示有如下提示：</p>
+<pre><code>random: Trying to read entropy from /dev/random
+Configuration file: /etc/hostapd/hostapd.conf
+Could not open file /sys/class/net/wlan0/phy80211/name: No such file or directory
+netlink: Operstate: linkmode=0, operstate=6
+nl80211: Set mode ifindex 3 iftype 2 (STATION)
+nl80211: Failed to set interface 3 to mode 2: -19 (No such device)
+nl80211: Try mode change after setting interface down
+nl80211: Set mode ifindex 3 iftype 2 (STATION)
+nl80211: Failed to set interface 3 to mode 2: -19 (No such device)
+nl80211: Interface mode change to 2 from 0 failed
+nl80211 driver initialization failed.</code></pre>
+<p>和 iw 是一样的症状，不明真相。但是换了二进制文件后确实可以用了，不过注意 driver 要写成 <code>rtl871xdrv</code> 。</p>
+<h1 id="udhcpd">udhcpd</h1>
+<p>是我姿势不对吗…… udhcpd 在我手里简直是一大坑货，不知道坑了我多少时间……换成 dnsmasq 马上就好了。</p>
+<p>大概就是……我终于可以建 wifi 了，但是连不上……有时候的奇怪情况是手机可以连上去，但是笔记本就连不上去了；如果笔记本连上去，那么手机就连不上去了。我一开始以为是 hostapd 的原因，搜了一下没找到，看到很多次都是卡在 <code>Setting network address</code> 这里，没有获得 ip、dns、gateway 之类的东西，我就想是不是 udhcpd 没有启动。一看果然没有启动，于是我就去启动了一下，过不了多久居然又关了，有时候甚至是启动都启动不起来。一怒之下换成了 dnsmasq ，于是就好了。发现 log 真是一个好东西，一开始 dnsmasq 没有配置好，发现它有 log 功能，于是看了看 <code>/var/log/syslog</code> 明白是哪里有问题然后就好做了。</p>
+<p>还差最后一个东西就是网桥了……</p>
+<p>在 <a href="http://nims11.wordpress.com/2012/04/27/hostapd-the-linux-way-to-create-virtual-wifi-access-point/" target="_blank" rel="noopener">这篇文章</a> 的帮助下，成功搭好了 NAT 网桥……</p>
+<p>P.S. 刚买了 Raspberry Pi 就发现一个叫做 Cubieboard 的东西……</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/06/19/reach-world/" rel="next" title="Across the Great Wall">
+                <i class="fa fa-chevron-left"></i> Across the Great Wall
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/08/22/QQNotifier/" rel="prev" title="QQNotifier">
+                QQNotifier <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Yuping Luo</p>
+              <p class="site-description motion-element" itemprop="description">Valar Morghulis</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.google.com/+YupingLuo" target="_blank" title="Google+">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Google+</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/roosephu" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yuping.luo.96" target="_blank" title="Facebook">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Facebook</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#材料预备"><span class="nav-number">1.</span> <span class="nav-text">材料预备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#装系统"><span class="nav-number">2.</span> <span class="nav-text">装系统</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#配置"><span class="nav-number">3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gpio-系列"><span class="nav-number">4.</span> <span class="nav-text">GPIO 系列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#无线网卡"><span class="nav-number">5.</span> <span class="nav-text">无线网卡</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#udhcpd"><span class="nav-number">6.</span> <span class="nav-text">udhcpd</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuping Luo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://roosephus-blog.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://roosephu.github.io/2014/06/22/R-Pi-start/';
+          this.page.identifier = '2014/06/22/R-Pi-start/';
+          this.page.title = 'Raspberry Pi';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://roosephus-blog.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

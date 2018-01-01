@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="fun hole," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="XHR 问我关于动态 MST 的问题，于是找论文看到一个很神奇的 O(sqrt(m)) per update 的方法。把思路简单说一下吧。（你可以简单地把这篇文章看成是翻译 = =||） 原论文标题是 Data Structures for On-Line Updating of Minimum Spanning Trees, with Applications ，作者是 Greg N. Fred">
+<meta name="keywords" content="fun hole">
+<meta property="og:type" content="article">
+<meta property="og:title" content="「进行中」Dynamic Minimum Spanning Tree">
+<meta property="og:url" content="roosephu.github.io/2013/03/25/dynamic-mst/index.html">
+<meta property="og:site_name" content="AFAIK">
+<meta property="og:description" content="XHR 问我关于动态 MST 的问题，于是找论文看到一个很神奇的 O(sqrt(m)) per update 的方法。把思路简单说一下吧。（你可以简单地把这篇文章看成是翻译 = =||） 原论文标题是 Data Structures for On-Line Updating of Minimum Spanning Trees, with Applications ，作者是 Greg N. Fred">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-01-01T11:42:12.646Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="「进行中」Dynamic Minimum Spanning Tree">
+<meta name="twitter:description" content="XHR 问我关于动态 MST 的问题，于是找论文看到一个很神奇的 O(sqrt(m)) per update 的方法。把思路简单说一下吧。（你可以简单地把这篇文章看成是翻译 = =||） 原论文标题是 Data Structures for On-Line Updating of Minimum Spanning Trees, with Applications ，作者是 Greg N. Fred">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="roosephu.github.io/2013/03/25/dynamic-mst/"/>
+
+
+
+
+
+  <title>「进行中」Dynamic Minimum Spanning Tree | AFAIK</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-37094989-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AFAIK</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Valar Dohaeris</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="roosephu.github.io/2013/03/25/dynamic-mst/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yuping Luo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AFAIK">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">「进行中」Dynamic Minimum Spanning Tree</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2013-03-25T00:00:00-04:00">
+                2013-03-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/03/25/dynamic-mst/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2013/03/25/dynamic-mst/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>XHR 问我关于动态 MST 的问题，于是找论文看到一个很神奇的 <code>O(sqrt(m))</code> per update 的方法。把思路简单说一下吧。（你可以简单地把这篇文章看成是翻译 = =||）</p>
+<p>原论文标题是 <code>Data Structures for On-Line Updating of Minimum Spanning Trees, with Applications</code> ，作者是 <code>Greg N. Frederickson</code> 。</p>
+<h1 id="保证每个点的度">保证每个点的度</h1>
+<p>保证每条边的权为正，这是显然的。</p>
+<p>首先要构造一个图，使得和原图的 MST 相同，且保证每个点的度不超过 3 。</p>
+<p>原图 <code>G(V, E), \|V\| = n, \|E\| = m</code> ，新图 <code>G'(V', E'), \|V'\| = m, \|E'\| = m</code> ，做法是将原图中的每个点拆成 D 个点（D 表示这个点的度），这 D 个点形成一个环，环上边的权为 0 ，原图的每一条边就可以对应新图一条边，而且任意两条原图的边不会占用同一个新图的点，可以保证每个点的度不超过 3 。</p>
+<h1 id="维护的值可能的操作">维护的值、可能的操作</h1>
+<p>z：块的大小</p>
+<p>块状树的构造：</p>
+<pre><code>def csearch(v) :
+    clust = set()
+    for u in child[v] :
+        clust = cluse \| csearch(u)
+    if len(clust) &gt; z :
+        # find a new clust
+        return set()
+    return clust</code></pre>
+<p><code>E[i, j]</code> ：表示所有连接第 i 个块和第 j 个块的边</p>
+<p><code>minE[i, j]</code> ：表示 <code>E[i, j]</code> 中权最小的边</p>
+<p><code>delB(i)</code> ：删除第 i 个块。复杂度 <code>O(z)</code> 。</p>
+<p><code>addB(S)</code> ：建立一个块，块内的元素集合为 S 。复杂度 <code>O(z)</code> 。</p>
+<p><code>delE(x, y)</code>：删除树上连接 x 和 y 的边。如果这条边连接两个块，直接无视。否则先把两个点所在的块删除，然后和相邻的某个块合并，如果合并后的块大小超过某个值，再分裂。所有访问到的块为常数个，复杂度 <code>O(z)</code> 。</p>
+<p><code>addE(x, y)</code> ：添加一条连接 x 和 y 的边，然后试图合并两个块。复杂度 <code>O(z)</code> 。</p>
+<p>由于度数限制，每个操作的复杂度均为 <code>O(z)</code> 。</p>
+<h1 id="om23-per-update">O(m^{2/3}) per update</h1>
+<p>我们用块状树维护 MST 。</p>
+<p>有四种可能的操作：减小树边的权，增加非树边的权，减小非树边的权，增加树边的权。前两种总是可以忽略的。</p>
+<p>对于第三种情况，直接查询最大的树边，有可能的话就把它替换掉。替换就是先删除一条边，再添加一条边。</p>
+<p>对于第四种情况。我们先把这条树边删去，然后枚举所有的块对，如果可以覆盖这条边，那么用 <code>minE[i, j]</code> 来更新最优的非树边。最后再比较一次，如果可以更新 MST 就执行一次替换。</p>
+<p>复杂度的事呢，第三种情况显然是 <code>O(z)</code> 的，第四种情况是 <code>O(z + (m/z)^2)</code> 的，于是 <code>z = m^{2/3}</code> 好了。</p>
+<h1 id="osqrtm-log-m-per-update">O(sqrt(m log m)) per update</h1>
+<p>上述做法没有用到任何数据结构维护。一个显然的优化是用某种奇怪的数据结构来优化。</p>
+<h2 id="topology-tree">Topology Tree</h2>
+<p>这里用到的数据结构是 Topology Tree 。Topology Tree 是一种动态树，他用一个奇怪的树形结构来维护原来的树，可以在 O(log m) 的时间内往原树加入、删除一条边。</p>
+<p>考虑一棵任意点度数不超过 3 的树，我们可以 <code>O(n)</code> 构造它的 Topology Tree 。具体构造方式，自己参考论文吧，因为要用图来解释我就懒得搞了。</p>
+<p>容易证明， Topology Tree 的高度是 <code>O(log n)</code> 的。Topology Tree 中任意一个节点的孩子数不超过 4 。</p>
+<p>为啥这里需要 Topology Tree 呢？因为后面需要支持若干个操作： 1. 合并两棵树 2. 把一棵树分成两棵 3. 查询一棵树的最小权</p>
+<h2 id="块树">块树</h2>
+<p>构造一个新树叫做“块树”，也就是把原树一个块缩为一个点。可以得到块树的大小是 <code>O(m / z)</code> 的。</p>
+<p>很囧的一点，块树的度数并没有保证。于是我们要找到一个合适的划分块的方式，使得满足： 1. 在 MST 中，任意一个块至多与三个块相邻。 2. 任意一个大小小于 z 的块必定与三个块相邻。</p>
+<p>这种划分块的方式只要在 <code>csearch</code> 的基础上稍稍修改即可。每次函数再多返回一个值，表示与几个块相邻。一旦块的大小超过 z 或者度数等于 3 ，这就应该要被分成一个块。可以证明，这种方式可以满足要求。（证明懒得看了）</p>
+<p>我们把这种划分的方式成为 <code>度限制划分</code> （自己随口 YY 的名字）。</p>
+<h2 id="具体做法">具体做法</h2>
+<p>我们在度限制划分时会产生 <code>O(m / z)</code> 个小块，对于每个小块我们构造一棵 Topology Tree 。这棵 Topology Tree 的每个叶子表示一个划分出来的小块，顺便用一个堆按边权大小维护 <code>E[i, j]</code> 以及最小权的边；对于每个内节点，我们维护这棵子树内的最小权的边。很显然，所有的 <code>O(m / z)</code> 棵 Topology Tree 的形状是一模一样的，只是要维护的值不一样。空间复杂度易知为 <code>O(m^2/z^2 + m)</code> 。当 <code>z &gt; sqrt(m)</code> 时，空间复杂度为 <code>O(m)</code> 。</p>
+<p>再次考虑删除（添加）一个块需要做的操作。每次需要修改 <code>O(m / z)</code> 棵 Topology Tree 。每次修改需要修改最下层的叶子，然后依次更新内节点。由于 Topology Tree 的高度为 <code>O(log (m / z))</code> ，所以每次操作的复杂度为 <code>O(m/z log (m/z))</code> 。</p>
+<p>考虑第三种情况。由于替换边的本质是重新维护块，而需要维护的块的个数是常数个，而且要构造常数个块的 Topology Tree ，所以复杂度是 <code>O(m/z log (m/z) + z)</code> 。</p>
+<p>考虑第四种情况。这一步就可以通过维护的 Topology Tree 来加快速度。不妨设这条树边连接的是 x 和 y 。如果 x 和 y 在同一个块中，我们需要把这个块分裂成两个，这也可以通过改变常数个块来实现。在前一种算法中，我们要 O(m<sup>2/z</sup>2) 地枚举块对，现在我们只要枚举一个块，在这个块对应的 Topology Tree 中把 x-y 这条边删去，这样会产生两个 Topology Tree ，选择不包含这个块的 Topology Tree ，用维护的子树最小权的边即可更新答案。第一步的复杂度是 <code>O(m/z log (m/z) + z)</code> ，第二步的复杂度为 <code>O(m/z log (m/z))</code> ，总时间复杂度为 <code>O(m/z log (m/z) + z)</code> 。</p>
+<p>均衡一下，令 <code>z = sqrt(m log m)</code> 可以得到整个算法 per update 的时间复杂度为 <code>O(sqrt(m log n))</code> 。真是太令人（理性）愉悦了～</p>
+<h1 id="osqrtm-per-update">O(sqrt(m)) per update</h1>
+<p>在上一种做法中，我们建立了 <code>O(m / z)</code> 棵 Topology Tree ，而这若干棵树的形态完全一样。于是我们可以考虑建立一棵“二维 Topology Tree”来继续优化。</p>
+<p>然后啪啦啪啦优化就是 O(sqrt(m)) 了 = =|| （具体过程正在看……）</p>
+<p><span class="math inline">\(O(\sqrt{n})\)</span></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/fun-hole/" rel="tag"># fun hole</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/03/23/CF-176/" rel="next" title="Codeforces-176">
+                <i class="fa fa-chevron-left"></i> Codeforces-176
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/03/30/TeX-support/" rel="prev" title="TeX-support">
+                TeX-support <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Yuping Luo</p>
+              <p class="site-description motion-element" itemprop="description">Valar Morghulis</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.google.com/+YupingLuo" target="_blank" title="Google+">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Google+</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/roosephu" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yuping.luo.96" target="_blank" title="Facebook">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Facebook</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#保证每个点的度"><span class="nav-number">1.</span> <span class="nav-text">保证每个点的度</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#维护的值可能的操作"><span class="nav-number">2.</span> <span class="nav-text">维护的值、可能的操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#om23-per-update"><span class="nav-number">3.</span> <span class="nav-text">O(m^{2/3}) per update</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#osqrtm-log-m-per-update"><span class="nav-number">4.</span> <span class="nav-text">O(sqrt(m log m)) per update</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#topology-tree"><span class="nav-number">4.1.</span> <span class="nav-text">Topology Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#块树"><span class="nav-number">4.2.</span> <span class="nav-text">块树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体做法"><span class="nav-number">4.3.</span> <span class="nav-text">具体做法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#osqrtm-per-update"><span class="nav-number">5.</span> <span class="nav-text">O(sqrt(m)) per update</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuping Luo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://roosephus-blog.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://roosephu.github.io/2013/03/25/dynamic-mst/';
+          this.page.identifier = '2013/03/25/dynamic-mst/';
+          this.page.title = '「进行中」Dynamic Minimum Spanning Tree';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://roosephus-blog.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

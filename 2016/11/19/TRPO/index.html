@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="MachineLearning," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="\(\newcommand{\kl}{D_{\mathrm{KL}}}\) Here are the personal notes on some techniques used in Trust Region Policy Optimization (TRPO) Architecture A policy is a function from a state to a distribution">
+<meta name="keywords" content="MachineLearning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="On Trust Region Policy Optimization">
+<meta property="og:url" content="roosephu.github.io/2016/11/19/TRPO/index.html">
+<meta property="og:site_name" content="AFAIK">
+<meta property="og:description" content="\(\newcommand{\kl}{D_{\mathrm{KL}}}\) Here are the personal notes on some techniques used in Trust Region Policy Optimization (TRPO) Architecture A policy is a function from a state to a distribution">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-01-01T11:42:12.641Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="On Trust Region Policy Optimization">
+<meta name="twitter:description" content="\(\newcommand{\kl}{D_{\mathrm{KL}}}\) Here are the personal notes on some techniques used in Trust Region Policy Optimization (TRPO) Architecture A policy is a function from a state to a distribution">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="roosephu.github.io/2016/11/19/TRPO/"/>
+
+
+
+
+
+  <title>On Trust Region Policy Optimization | AFAIK</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-37094989-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AFAIK</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Valar Dohaeris</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="roosephu.github.io/2016/11/19/TRPO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yuping Luo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AFAIK">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">On Trust Region Policy Optimization</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-11-19T04:01:37-05:00">
+                2016-11-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/11/19/TRPO/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2016/11/19/TRPO/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><span class="math inline">\(\newcommand{\kl}{D_{\mathrm{KL}}}\)</span> Here are the personal notes on some techniques used in Trust Region Policy Optimization (TRPO)</p>
+<h1 id="architecture">Architecture</h1>
+<p>A <em>policy</em> is a function from a state to a distribution of actions: <span class="math inline">\(\pi_\theta(a | s)\)</span>. It’s often the case that <span class="math inline">\(\pi\)</span> is a special distribution parameterized by <span class="math inline">\(\phi_\theta(s)\)</span>. For example, <span class="math inline">\(\pi_\theta(\cdot | s) \sim \mathcal{N}(\mu_\theta(s), \sigma_\theta^2(s))\)</span>, so here <span class="math inline">\(\phi_\theta(s) = (\mu_\theta(s), \sigma_\theta(s))\)</span>. TRPO tries to maximize <span class="math inline">\(\eta(\theta)\)</span>, with the constraint of <span class="math inline">\(\kl(\pi_\theta(\cdot | s), \pi_{\theta&#39;}(\cdot | s)) \leq \delta\)</span>.</p>
+<a id="more"></a>
+<h1 id="fisher-vector-product">Fisher-vector product</h1>
+<p>An important step in TRPO is to apply <em>Conjugate Gradient</em> algorithm, which requires us to compute the product of a Fisher information matrix and a vector. The Fisher information matrix (FIM) of <span class="math inline">\(\theta\)</span>, is defined by <span class="math display">\[
+F_\theta(s) = \mathbb{E}\left[ \left(\frac{\partial \log \pi_\theta(x|s)}{\partial \theta}\right) \left(\frac{\partial \log \pi_\theta(x | s)}{\partial \theta} \right)^\top \middle| \theta \right].
+\]</span></p>
+<h2 id="the-method-faster-to-compute">The Method Faster to Compute</h2>
+<p>We now present an effective algorithm to compute <span class="math inline">\(F v\)</span> given a vector <span class="math inline">\(v\)</span>.</p>
+<p>In most cases, <span class="math inline">\(\pi_\theta(x|s)\)</span> is parameterized by <span class="math inline">\(\phi_\theta(s)\)</span>, i.e., <span class="math inline">\(\pi_\theta(x|s) = f(x; \phi_\theta(s))\)</span>. By some calculus knowledge we have <span class="math display">\[
+\frac{\partial \log \pi_\theta(x|s)}{\partial \theta} = \frac{\partial \log \pi_\theta(x|s)}{\partial \phi_\theta(s)} \frac{\partial \phi_\theta(s)}{\partial \theta} = \frac{\partial \log f(x; \phi_\theta(s))}{\partial \phi_\theta(s)} J,
+\]</span> where <span class="math inline">\(J\)</span> is the Jacobian of <span class="math inline">\(\phi_\theta(s)\)</span> w.r.t. <span class="math inline">\(\theta\)</span>. We can in turn find the relationship between the FIM of <span class="math inline">\(F_\theta(s)\)</span> and <span class="math inline">\(M\)</span>, the FIM of <span class="math inline">\(f\)</span>, as <span class="math display">\[
+F_\theta(s) = J^T \mathbb{E}\left[ \left( \frac{\partial \log f(x; \phi_\theta(s))}{\partial \phi_\theta(s)} \right) \left( \frac{\partial \log f(x; \phi_\theta(s))}{\partial \phi_\theta(s)} \right)^\top \middle | \theta \right] J = J^T M(\phi_\theta(s)) J. 
+\]</span></p>
+<p>To compute <span class="math inline">\(F_\theta(s) v\)</span>, we need to compute <span class="math inline">\(J^T M(\phi_\theta(s)) J v\)</span>. Note that <span class="math inline">\(Jv\)</span> (or <span class="math inline">\(J^T v\)</span>) can be computed in a standard forward (or backward) propagation fashion, <span class="math inline">\(M(\phi_\theta(s))\)</span> can be hand-encoded. The total cost is almost the same as back-propagating twice. However, the code seems a little bit annoying if you don’t have access to code to compute <span class="math inline">\(J v\)</span> for a vector <span class="math inline">\(v\)</span>. Multiplying <span class="math inline">\(J^T v\)</span> can be easily embedded into the back-propagation framework: <span class="math inline">\(J^T v = \nabla_\theta (f \cdot v)\)</span>. But I have no idea how to compute <span class="math inline">\(J v\)</span> in the framework of back-propagation, at least when using TensorFlow.</p>
+<h2 id="the-method-easier-to-implement">The Method Easier to Implement</h2>
+<p>Consider two policy <span class="math inline">\(\pi_\theta(a | s)\)</span> and <span class="math inline">\(\pi_{\theta&#39;} (a|s)\)</span>. We keep <span class="math inline">\(\theta&#39;\)</span> fixed, and then consider the Hessian of <span class="math inline">\(\kl(\pi_{\theta&#39;}(a|s) \|\pi_{\theta}(a|s))\)</span>, denoted as <span class="math inline">\(H\)</span>. We use <span class="math inline">\(H\)</span> to approximate <span class="math inline">\(F\)</span>. Therefore <span class="math display">\[
+\begin{align}
+F_{i, j} \approx H_{i, j} &amp;= \frac{\partial^2}{\partial \theta_i \partial \theta_j} \kl(\pi_{\theta&#39;}(a|s) \| \pi_{\theta}(a|s) \\
+&amp; =\frac{ \partial^2 }{\partial \theta_i \partial \theta_j} \mathbb{E}_{a \sim \pi_{\theta&#39;}(\cdot | s)}\left[ \log \frac{\pi_{\theta&#39;}(a|s)}{\pi_{\theta}(a|s)} \right]. \\ 
+&amp; = -\frac{ \partial^2 }{\partial \theta_i \partial \theta_j} \mathbb{E}_{a \sim \pi_{\theta&#39;}(\cdot | s)}\left[ \log \pi_{\theta}(a|s) \right]
+\end{align}
+\]</span> After find a closed form for the expectation, we can use standard techniques to compute Hessian-vector product by noticing <span class="math inline">\(Hv = \nabla_\theta (\nabla_\theta f \cdot v)\)</span> which can fully utilize popular auto-differentiation tools. Take the parameterized normal distribution for example. Suppose <span class="math inline">\(\pi_{\theta}(a|s) \sim \mathcal{N}(\mu_\theta(s), \sigma^2_\theta(s))\)</span>, the closed form is <span class="math display">\[\begin{align}
+&amp; -\mathbb{E}_{a \sim \pi_{\theta&#39;}(\cdot | s)} \left[\log \pi_{\theta}(a|s) \right] \\
+= &amp; \mathbb{E}_{a \sim \pi_{\theta&#39;}(\cdot | s)} \left[ \frac{(a - \mu_{\theta}(s))^2}{2 \sigma^2_{\theta}(s)} + \log \sigma_\theta(s) \right] \\
+= &amp; \mathbb{E}_{a \sim \mathcal{N}(0, 1)} \left[ \frac{(\sigma_{\theta&#39;}(s)a + \mu_{\theta&#39;}(s) - \mu_{\theta}(s))^2}{2 \sigma^2_{\theta}(s)} \right]+ \log \sigma_\theta(s) \\
+= &amp; \frac{\sigma^2_{\theta&#39;}(s) + (\mu_{\theta&#39;}(s) - \mu_{\theta}(s))^2}{2 \sigma^2_{\theta}(s)}+ \log \sigma_\theta(s).
+\end{align}\]</span></p>
+<h1 id="conjugate-gradient">Conjugate Gradient</h1>
+<p>Here we describe an algorithm to solve a linear equation <span class="math inline">\(A x = y\)</span> for a symmetric positive definite matrix <span class="math inline">\(A\)</span>, the <em>Conjugate Gradient</em> algorithm (CG).</p>
+<p>We define two vectors <span class="math inline">\(u, v\)</span> are <em>conjugate</em> w.r.t. <span class="math inline">\(A\)</span>, if and only if <span class="math inline">\(u^T A v = 0\)</span>. A set of basis of <span class="math inline">\(A\)</span> is a set of non-zero vectors <span class="math inline">\(\{b_1, b_2, \dots, b_n\}\)</span>, which are mutual conjugate w.r.t. <span class="math inline">\(A\)</span>.</p>
+<p>It’s easy to show that the minimum of a convex function <span class="math inline">\(L(x) = \frac{1}{2} x^\top A x - x^\top y\)</span> is reached when <span class="math inline">\(A x = y\)</span>. So our goal is to find <span class="math inline">\(x\)</span> to minimize <span class="math inline">\(L(x)\)</span> as possible.</p>
+<p><span class="math inline">\(L(x)\)</span> can be simplified with the help of a set of basis.</p>
+<span class="math display">\[\begin{align}
+L(x) &amp; = \frac{1}{2} x^\top A x - x^\top y \\
+    &amp; = \frac{1}{2} \left(\sum_{i=1}^n \alpha_i b_i \right)^\top A \left( \sum_{i=1}^n \alpha_i b_i \right) - \left( \sum_{i=1}^n \alpha_i b_i \right)^\top y \\
+    &amp; = \sum_{i=1}^n \left( \frac{1}{2} b_i^\top A b_i \cdot \alpha_i^2 - b_i^\top y \cdot \alpha_i \right).
+\end{align}\]</span>
+<p>Once <span class="math inline">\(b_i\)</span>s are chosen, only <span class="math inline">\(\alpha_i\)</span> remains variable. Optimizing each <span class="math inline">\(\alpha_i\)</span> independently leads to minimizing <span class="math inline">\(L(x)\)</span>.</p>
+<p>The <span class="math inline">\(\alpha_i\)</span> plays a role in a quadratic function, so the minima of <span class="math inline">\(\alpha_i\)</span> is <span class="math display">\[
+\alpha_i = \frac{b_i^\top y}{b_i^\top A b_i}. 
+\]</span> Furthermore we need to find a set of basis. This is often done by a process similar to <a href="https://en.wikipedia.org/wiki/Gram–Schmidt_process" target="_blank" rel="noopener">Gram-Schmidt process</a>. For <span class="math inline">\(0 \leq k &lt; n\)</span>, suppose <span class="math inline">\(b_1, b_2, \dots, b_k\)</span> have already been decided, now we want to find a vector which is conjugate to all of those. We define <span class="math display">\[
+x_k = \sum_{i = 1}^k \alpha_i b_i.
+\]</span> If <span class="math inline">\(A x_k \neq y\)</span>, <span class="math inline">\(r_k = y - A x_k\)</span> should have a component which is conjugate to all <span class="math inline">\(b_1, b_2, \dots, b_k\)</span>. By getting rid of components of <span class="math inline">\(b_1, b_2, \dots, b_k\)</span>, we can find a vector which is conjugate to any known vectors. <span class="math inline">\(b_{k+1}\)</span> is given by <span class="math display">\[
+b_{k+1} = r_k - \sum_{i=1}^k \frac{r_k^\top A b_i}{b_i ^\top A b_i} b_i.
+\]</span> One can easily check <span class="math inline">\(b_{k+1}^\top A b_i = 0\)</span> for all <span class="math inline">\(i \in [k]\)</span>. (Exercise)</p>
+<p>As a summary, the <em>Conjugate Gradient</em> algorithms runs as follows:</p>
+<ol type="1">
+<li>initialize <span class="math inline">\(x_0 \gets 0\)</span>;</li>
+<li>let <span class="math inline">\(T\)</span> be number of iterations, can be <span class="math inline">\(n\)</span> but typically is a constant;</li>
+<li>loop over <span class="math inline">\(k\)</span> from 0 to <span class="math inline">\(T - 1\)</span>: <span class="math display">\[\begin{align}
+r_k &amp; = y - A x_k \\
+b_{k+1} &amp; = r_k - \sum_{i=1}^k \frac{r_k^\top A b_i}{b_i ^\top A b_i} b_i \\
+\alpha_{k+1} &amp; = \frac{b_{k+1}^\top y}{b_{k+1}^\top A b_{k+1}} \\
+x_{k+1} &amp; = x_k + \alpha_{k+1} b_{k+1} \\
+\end{align}\]</span></li>
+<li>output <span class="math inline">\(x = x_T\)</span>.</li>
+</ol>
+<p>When <span class="math inline">\(t = n\)</span>, CG will produce the exactly solution. However it may be too costly so we often just stop early, i.e., just iterate for a certain number of times.</p>
+<p>The algorithm doesn’t seem so efficient since it requires us to restore <span class="math inline">\(b_1, b_2, \dots, b_k\)</span> in order to compute <span class="math inline">\(b_{k+1}\)</span>. However this issue can be solved by more careful analysis. With the following equations, <span class="math display">\[\begin{align}
+r_k &amp; = r_{k - 1} - \alpha_k A b_k, \\
+\beta_k &amp; = \frac{r_k^\top r_k}{r_{k-1}^\top r_{k-1}}, \\
+b_{k+1} &amp; = r_k + \beta_k b_k. \\
+\end{align}\]</span> <span class="math inline">\(r_k\)</span> and <span class="math inline">\(b_k\)</span> can be easily computed, so can <span class="math inline">\(x_k\)</span>.</p>
+<p>Note that an advantage of CG is that we don’t need compute the full matrix <span class="math inline">\(A\)</span>. Instead, we only need to know how to compute <span class="math inline">\(Ax\)</span> given <span class="math inline">\(x\)</span>. For some reasons, it’s unrealistic to compute the whole matrix, e.g., Hession matrix in Hessian-free optimization and Fisher information matrix in Fisher-vector product, where CG becomes a very useful weapon.</p>
+<h1 id="acknowledgement">Acknowledgement</h1>
+<p>Thanks <a href="http://andrew.gibiansky.com/blog/machine-learning/hessian-free-optimization" target="_blank" rel="noopener">Andrew Gibiansky</a> for his clear explanation.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MachineLearning/" rel="tag"># MachineLearning</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/06/UyHiP-2016-Feb/" rel="next" title="UyHiP 2016 Feb Riddle">
+                <i class="fa fa-chevron-left"></i> UyHiP 2016 Feb Riddle
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/09/experience/" rel="prev" title="最近的一些小操作">
+                最近的一些小操作 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Yuping Luo</p>
+              <p class="site-description motion-element" itemprop="description">Valar Morghulis</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.google.com/+YupingLuo" target="_blank" title="Google+">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Google+</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/roosephu" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yuping.luo.96" target="_blank" title="Facebook">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Facebook</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#architecture"><span class="nav-number">1.</span> <span class="nav-text">Architecture</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fisher-vector-product"><span class="nav-number">2.</span> <span class="nav-text">Fisher-vector product</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#the-method-faster-to-compute"><span class="nav-number">2.1.</span> <span class="nav-text">The Method Faster to Compute</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#the-method-easier-to-implement"><span class="nav-number">2.2.</span> <span class="nav-text">The Method Easier to Implement</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#conjugate-gradient"><span class="nav-number">3.</span> <span class="nav-text">Conjugate Gradient</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#acknowledgement"><span class="nav-number">4.</span> <span class="nav-text">Acknowledgement</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuping Luo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://roosephus-blog.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://roosephu.github.io/2016/11/19/TRPO/';
+          this.page.identifier = '2016/11/19/TRPO/';
+          this.page.title = 'On Trust Region Policy Optimization';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://roosephus-blog.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
